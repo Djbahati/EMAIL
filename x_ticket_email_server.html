@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>X-Ticket Email</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #39be04 0%, #044e79 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            background: rgba(49, 156, 133, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(61, 150, 2, 0.459);
+            overflow: hidden;
+            width: 100%;
+            max-width: 1200px;
+            min-height: 600px;
+            display: flex;
+        }
+
+        .sidebar {
+            background: linear-gradient(135deg, #1411bb 0%, #02793d 100%);
+            width: 300px;
+            padding: 2rem;
+            color: rgb(163, 173, 16);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 2rem;
+            text-align: center;
+            color: #479144;
+        }
+
+        .nav-btn {
+            background: rgba(5, 233, 176, 0.589);
+            border: none;
+            color: rgb(250, 242, 242);
+            padding: 1rem;
+            margin: 0.5rem 0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .nav-btn:hover, .nav-btn.active {
+            background: rgba(3, 139, 230, 0.3);
+            transform: translateX(5px);
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .page {
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e1e8ed;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-right: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #27ae60, #229954);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+
+        .email-list {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 1rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .email-item {
+            background: rgba(116, 233, 7, 0.534);
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+            box-shadow: 0 2px 5px rgba(8, 69, 199, 0.1);
+        }
+
+        .email-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .email-from {
+            font-weight: 600;
+            color: #11589e;
+        }
+
+        .email-time {
+            color: #4208d4;
+            font-size: 0.9rem;
+        }
+
+        .email-subject {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: lab(33.27% 43.19 -56.89)27% 43.19 -56.8927% 43.19 -56.8927% 43.19 -56.89;
+        }
+
+        .status {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: inline-block;
+            margin-top: 1rem;
+        }
+
+        .status.verified {
+            background: #d5edda;
+            color: #012b6b;
+        }
+
+        .status.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status.active {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .user-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .user-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #3498db;
+        }
+
+        .user-email {
+            font-weight: 600;
+            color: #0880f8;
+            margin-bottom: 0.5rem;
+        }
+
+        .user-role {
+            color: #095c17;
+            font-size: 0.9rem;
+        }
+
+        h1, h2 {
+            color: #0c5eb1;
+            margin-bottom: 1.5rem;
+        }
+
+        .success-message, .error-message {
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .success-message {
+            background: #d5edda;
+            color: #0bc035;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                margin: 1rem;
+                min-height: auto;
+            }
+            
+            .sidebar {
+                width: 100%;
+                padding: 1rem;
+            }
+            
+            .main-content {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="logo">X-Ticket</div>
+            <button class="nav-btn active" onclick="showPage('login')">Login</button>
+            <button class="nav-btn" onclick="showPage('signup')">Sign Up</button>
+            <button class="nav-btn" onclick="showPage('dashboard')" id="dashboardBtn" style="display: none;">Dashboard</button>
+            <button class="nav-btn" onclick="showPage('compose')" id="composeBtn" style="display: none;">Compose Email</button>
+            <button class="nav-btn" onclick="showPage('users')" id="usersBtn" style="display: none;">Manage Users</button>
+            <button class="nav-btn" onclick="logout()" id="logoutBtn" style="display: none;">Logout</button>
+        </div>
+
+        <div class="main-content">
+            <!-- Login Page -->
+            <div id="login" class="page active">
+                <h1>Login to X-Ticket Mail</h1>
+                <form onsubmit="login(event)">
+                    <div class="form-group">
+                        <label for="loginEmail">Email</label>
+                        <input type="email" id="loginEmail" required placeholder="username@x-ticket.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="loginPassword">Password</label>
+                        <input type="password" id="loginPassword" required placeholder="Enter your password">
+                    </div>
+                    <button type="submit" class="btn">Login</button>
+                </form>
+            </div>
+
+            <!-- Signup Page -->
+            <div id="signup" class="page">
+                <h1>Create X-Ticket Account</h1>
+                <form onsubmit="signup(event)">
+                    <div class="form-group">
+                        <label for="signupUsername">Username</label>
+                        <input type="text" id="signupUsername" required placeholder="Enter username (will create username@x-ticket.com)">
+                    </div>
+                    <div class="form-group">
+                        <label for="signupFullName">Fist Name</label>
+                        <input type="text" id="signupFullName" required placeholder="Enter your fist name">
+                    </div>
+                    <div class="form-group">
+                        <label for="signupFullName">Last Name</label>
+                        <input type="text" id="signupFullName" required placeholder="Enter your Last name">
+                    </div>
+                    <div class="form-group">
+                        <label for="signupPassword">Password</label>
+                        <input type="password" id="signupPassword" required placeholder="Create a strong password">
+                    </div>
+                    <div class="form-group">
+                        <label for="signupPassword">confirm Password</label>
+                        <input type="password" id="signupPassword" required placeholder="Create a strong password">
+                    </div>
+                    <div class="form-group">
+                        <label for="signupRole">Role</label>
+                        <select id="signupRole" required>
+                            <option value="admin">CEO</option>
+                            <option value="">CFO</option>
+                            <option value="">CTO</option>
+                            <option value="">CPO</option>
+                            <option value="">HR</option>
+                            <option value="">COO</option>
+                            <option value="">backend</option>
+                            <option value="">frontend</option>
+                            <option value="">fullstack</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="signupDepartment">Department</label>
+                        <input type="text" id="signupDepartment" required placeholder="Enter department">
+                    </div>
+                    <button type="submit" class="btn">Create Account</button>
+                </form>
+            </div>
+
+            <!-- Dashboard Page -->
+            <div id="dashboard" class="page">
+                <h1>Email Dashboard</h1>
+                <div id="userInfo"></div>
+                <h2>Recent Emails</h2>
+                <div class="email-list" id="emailList">
+                    <!-- Emails will be populated here -->
+                </div>
+            </div>
+
+            <!-- Compose Email Page -->
+            <div id="compose" class="page">
+                <h1>Compose Email</h1>
+                <form onsubmit="sendEmail(event)">
+                    <div class="form-group">
+                        <label for="emailTo">To</label>
+                        <input type="email" id="emailTo" required placeholder="recipient@x-ticket.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="emailSubject">Subject</label>
+                        <input type="text" id="emailSubject" required placeholder="Enter email subject">
+                    </div>
+                    <div class="form-group">
+                        <label for="emailBody">Message</label>
+                        <textarea id="emailBody" rows="10" required placeholder="Enter your message"></textarea>
+                    </div>
+                    <button type="submit" class="btn">Send Email</button>
+                </form>
+            </div>
+
+            <!-- Users Management Page -->
+            <div id="users" class="page">
+                <h1>User Management</h1>
+                <div class="user-list" id="userList">
+                    <!-- Users will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // In-memory storage for demo purposes
+        let users = [
+            {
+                id: 1,
+                username: 'admin',
+                email: 'admin@x-ticket.com',
+                fullName: 'System Administrator',
+                password: 'admin123',
+                role: 'admin',
+                department: 'IT',
+                verified: true,
+                status: 'active'
+            }
+        ];
+
+        let emails = [
+            {
+                id: 1,
+                from: 'admin@x-ticket.com',
+                to: 'admin@x-ticket.com',
+                subject: 'Welcome to X-Ticket Mail System',
+                body: 'Welcome to the X-Ticket company email system. You can now send and receive emails using your company account.',
+                timestamp: new Date().toISOString(),
+                read: false
+            }
+        ];
+
+        let currentUser = null;
+
+        function showPage(pageId) {
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // Remove active class from all nav buttons
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected page
+            document.getElementById(pageId).classList.add('active');
+            
+            // Add active class to clicked button
+            event.target.classList.add('active');
+        }
+
+        function login(event) {
+            event.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            const user = users.find(u => u.email === email && u.password === password);
+            
+            if (user) {
+                if (!user.verified) {
+                    showMessage('Please verify your email before logging in.', 'error');
+                    return;
+                }
+                
+                currentUser = user;
+                showMessage('Login successful!', 'success');
+                showLoggedInInterface();
+                showPage('dashboard');
+                loadDashboard();
+            } else {
+                showMessage('Invalid email or password.', 'error');
+            }
+        }
+
+        function signup(event) {
+            event.preventDefault();
+            
+            const username = document.getElementById('signupUsername').value;
+            const fullName = document.getElementById('signupFullName').value;
+            const password = document.getElementById('signupPassword').value;
+            const role = document.getElementById('signupRole').value;
+            const department = document.getElementById('signupDepartment').value;
+            
+            const email = `${username}@x-ticket.com`;
+            
+            // Check if user already exists
+            if (users.find(u => u.email === email)) {
+                showMessage('User with this email already exists.', 'error');
+                return;
+            }
+            
+            const newUser = {
+                id: users.length + 1,
+                username,
+                email,
+                fullName,
+                password,
+                role,
+                department,
+                verified: true, // Auto-verify for demo
+                status: 'active'
+            };
+            
+            users.push(newUser);
+            
+            // Send welcome email
+            emails.push({
+                id: emails.length + 1,
+                from: 'admin@x-ticket.com',
+                to: email,
+                subject: 'Welcome to X-Ticket!',
+                body: `Welcome ${fullName}! Your X-Ticket email account has been created. Your email address is: ${email}`,
+                timestamp: new Date().toISOString(),
+                read: false
+            });
+            
+            showMessage('Account created successfully! You can now login.', 'success');
+            document.getElementById('signupUsername').value = '';
+            document.getElementById('signupFullName').value = '';
+            document.getElementById('signupPassword').value = '';
+            document.getElementById('signupRole').value = '';
+            document.getElementById('signupDepartment').value = '';
+        }
+
+        function sendEmail(event) {
+            event.preventDefault();
+            
+            const to = document.getElementById('emailTo').value;
+            const subject = document.getElementById('emailSubject').value;
+            const body = document.getElementById('emailBody').value;
+            
+            // Check if recipient exists
+            const recipient = users.find(u => u.email === to);
+            if (!recipient) {
+                showMessage('Recipient not found in X-Ticket system.', 'error');
+                return;
+            }
+            
+            const newEmail = {
+                id: emails.length + 1,
+                from: currentUser.email,
+                to: to,
+                subject: subject,
+                body: body,
+                timestamp: new Date().toISOString(),
+                read: false
+            };
+            
+            emails.push(newEmail);
+            
+            showMessage('Email sent successfully!', 'success');
+            document.getElementById('emailTo').value = '';
+            document.getElementById('emailSubject').value = '';
+            document.getElementById('emailBody').value = '';
+        }
+
+        function showLoggedInInterface() {
+            document.getElementById('dashboardBtn').style.display = 'block';
+            document.getElementById('composeBtn').style.display = 'block';
+            document.getElementById('usersBtn').style.display = 'block';
+            document.getElementById('logoutBtn').style.display = 'block';
+        }
+
+        function hideLoggedInInterface() {
+            document.getElementById('dashboardBtn').style.display = 'none';
+            document.getElementById('composeBtn').style.display = 'none';
+            document.getElementById('usersBtn').style.display = 'none';
+            document.getElementById('logoutBtn').style.display = 'none';
+        }
+
+        function logout() {
+            currentUser = null;
+            hideLoggedInInterface();
+            showPage('login');
+            showMessage('Logged out successfully.', 'success');
+        }
+
+        function loadDashboard() {
+            if (!currentUser) return;
+            
+            // Show user info
+            document.getElementById('userInfo').innerHTML = `
+                <div class="user-card">
+                    <div class="user-email">${currentUser.email}</div>
+                    <div class="user-role">${currentUser.fullName} - ${currentUser.role}</div>
+                    <div class="status ${currentUser.verified ? 'verified' : 'pending'}">
+                        ${currentUser.verified ? 'Verified' : 'Pending Verification'}
+                    </div>
+                </div>
+            `;
+            
+            // Load emails for current user
+            const userEmails = emails.filter(e => e.to === currentUser.email || e.from === currentUser.email);
+            const emailListHTML = userEmails.map(email => `
+                <div class="email-item">
+                    <div class="email-header">
+                        <span class="email-from">${email.from}</span>
+                        <span class="email-time">${new Date(email.timestamp).toLocaleString()}</span>
+                    </div>
+                    <div class="email-subject">${email.subject}</div>
+                    <div class="email-body">${email.body.substring(0, 100)}...</div>
+                </div>
+            `).join('');
+            
+            document.getElementById('emailList').innerHTML = userEmails.length ? emailListHTML : '<p>No emails found.</p>';
+        }
+
+        function loadUsers() {
+            const userListHTML = users.map(user => `
+                <div class="user-card">
+                    <div class="user-email">${user.email}</div>
+                    <div class="user-role">${user.fullName} - ${user.role}</div>
+                    <div class="user-role">Department: ${user.department}</div>
+                    <div class="status ${user.status}">${user.status}</div>
+                </div>
+            `).join('');
+            
+            document.getElementById('userList').innerHTML = userListHTML;
+        }
+
+        function showMessage(message, type) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = type === 'success' ? 'success-message' : 'error-message';
+            messageDiv.textContent = message;
+            
+            const activePage = document.querySelector('.page.active');
+            activePage.insertBefore(messageDiv, activePage.firstChild);
+            
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 5000);
+        }
+
+        // Override showPage function to handle page-specific loading
+        const originalShowPage = showPage;
+        showPage = function(pageId) {
+            originalShowPage.call(this, pageId);
+            
+            if (pageId === 'users' && currentUser) {
+                loadUsers();
+            } else if (pageId === 'dashboard' && currentUser) {
+                loadDashboard();
+            }
+        };
+    </script>
+</body>
+</html>
