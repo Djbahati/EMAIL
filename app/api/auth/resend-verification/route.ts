@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Log the resend attempt
-    await supabase
+    const { error: logError } = await supabase
       .from("verification_logs")
       .insert({
         username: user.username,
@@ -61,9 +61,12 @@ export async function POST(request: NextRequest) {
         ip_address: request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown",
         user_agent: request.headers.get("user-agent") || "unknown",
       })
-      .catch(console.error) 
-      
-      // Don't fail the request if logging fails
+
+    if (logError) {
+      console.error(logError)
+    }
+    
+    // Don't fail the request if logging fails
 
     return NextResponse.json({
       message: "New verification email sent successfully",

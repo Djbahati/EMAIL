@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
 
     if (findError || !user) {
       // Log failed attempt
-      await supabase
+      const { error: invalidTokenLogError } = await supabase
         .from("verification_logs")
         .insert({
           username: "unknown",
@@ -29,14 +29,17 @@ export async function POST(request: NextRequest) {
           ip_address: request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown",
           user_agent: request.headers.get("user-agent") || "unknown",
         })
-        .catch(console.error)
+
+      if (invalidTokenLogError) {
+        console.error(invalidTokenLogError)
+      }
 
       return NextResponse.json({ error: "Invalid or expired verification token" }, { status: 400 })
     }
 
     if (user.is_verified) {
       // Log already verified attempt
-      await supabase
+      const { error: alreadyVerifiedLogError } = await supabase
         .from("verification_logs")
         .insert({
           username: user.username,
@@ -46,9 +49,10 @@ export async function POST(request: NextRequest) {
           ip_address: request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown",
           user_agent: request.headers.get("user-agent") || "unknown",
         })
-        .catch(console.error)
 
-      return NextResponse.json({ error: "Email is already verified" }, { status: 400 })
+      if (alreadyVerifiedLogError) {
+        console.error(alreadyVerifiedLogError)
+      }
     }
 
     // Check if token has expired (if expiration is set)
@@ -58,7 +62,7 @@ export async function POST(request: NextRequest) {
 
       if (currentTime > expirationTime) {
         // Log expired token attempt
-        await supabase
+        const { error: expiredTokenLogError } = await supabase
           .from("verification_logs")
           .insert({
             username: user.username,
@@ -68,7 +72,10 @@ export async function POST(request: NextRequest) {
             ip_address: request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown",
             user_agent: request.headers.get("user-agent") || "unknown",
           })
-          .catch(console.error)
+
+        if (expiredTokenLogError) {
+          console.error(expiredTokenLogError)
+        }
 
         return NextResponse.json(
           { error: "Verification token has expired. Please request a new verification email." },
@@ -90,7 +97,7 @@ export async function POST(request: NextRequest) {
 
     if (updateError) {
       // Log update failure
-      await supabase
+      const { error: updateFailureLogError } = await supabase
         .from("verification_logs")
         .insert({
           username: user.username,
@@ -100,13 +107,14 @@ export async function POST(request: NextRequest) {
           ip_address: request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown",
           user_agent: request.headers.get("user-agent") || "unknown",
         })
-        .catch(console.error)
 
-      throw updateError
+      if (updateFailureLogError) {
+        console.error(updateFailureLogError)
+      }
     }
 
     // Log successful verification
-    await supabase
+    const { error: successLogError } = await supabase
       .from("verification_logs")
       .insert({
         username: user.username,
@@ -116,7 +124,10 @@ export async function POST(request: NextRequest) {
         ip_address: request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown",
         user_agent: request.headers.get("user-agent") || "unknown",
       })
-      .catch(console.error)
+
+    if (successLogError) {
+      console.error(successLogError)
+    }
 
     return NextResponse.json({
       message: "Email verified successfully",
